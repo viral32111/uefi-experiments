@@ -59,7 +59,7 @@ ARG CROSS_TARGET=i686-elf \
 RUN apt-get update && \
 	apt-get install --no-install-recommends --yes \
 		ca-certificates wget \
-		build-essential \
+		build-essential make \
 		texinfo \
 		bison flex libisl-dev gcc-multilib \
 		dejagnu tcl expect
@@ -80,7 +80,7 @@ RUN mkdir --verbose --parents \
 	wget --progress dot:mega --output-document /tmp/mpfr/source.tar.gz https://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz 2>&1 && \
 	wget --progress dot:mega --output-document /tmp/mpc/source.tar.gz https://ftp.gnu.org/gnu/mpc/mpc-${MPC_VERSION}.tar.gz 2>&1 && \
 	wget --progress dot:mega --output-document /tmp/gcc/source.tar.gz https://mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz 2>&1 && \
-	wget --progress dot:mega --output-document /tmp/gnuefi/source.tar.bz2 https://sourceforge.net/projects/gnu-efi/files/gnu-efi-${GNUEFI_VERSION}.tar.bz2/download 2>&1 && \
+	wget --progress dot:mega --output-document /tmp/gnuefi/source.tar.bz2 https://sourceforge.net/projects/gnu-efi/files/gnu-efi-${GNUEFI_VERSION}.tar.bz2/download 2>&1
 
 # Extract the downloaded source trees
 RUN tar --verbose --extract --strip-components 1 --file /tmp/binutils/source.tar.gz --directory /tmp/binutils/source && \
@@ -88,7 +88,7 @@ RUN tar --verbose --extract --strip-components 1 --file /tmp/binutils/source.tar
 	tar --verbose --extract --strip-components 1 --file /tmp/mpfr/source.tar.gz --directory /tmp/mpfr/source && \
 	tar --verbose --extract --strip-components 1 --file /tmp/mpc/source.tar.gz --directory /tmp/mpc/source && \
 	tar --verbose --extract --strip-components 1 --file /tmp/gcc/source.tar.gz --directory /tmp/gcc/source && \
-	tar --verbose --extract --strip-components 1 --file /tmp/gnuefi/source.tar.gz --directory /tmp/gnuefi
+	tar --verbose --extract --strip-components 1 --file /tmp/gnuefi/source.tar.bz2 --directory /tmp/gnuefi
 
 # Copy source trees for building the cross-compiler
 RUN	cp --verbose --archive /tmp/binutils/source /tmp/cross/binutils && \
@@ -146,7 +146,9 @@ ENV PATH="${BINUTILS_DIRECTORY}/bin:${GMP_DIRECTORY}/bin:${MPFR_DIRECTORY}/bin:$
 # https://wiki.osdev.org/GNU-EFI#Requirements
 RUN cd /tmp/gnuefi && \
 	make --jobs ${MAKE_JOBS} && \
-	make PREFIX=${GNUEFI_DIRECTORY} install
+	make PREFIX=${GNUEFI_DIRECTORY} install && \
+	mv -v ${GNUEFI_DIRECTORY}/lib/crt0-efi-x86_64.o ${GNUEFI_DIRECTORY}/crt0-efi-x86_64.o && \
+	mv -v ${GNUEFI_DIRECTORY}/lib/elf_x86_64_efi.lds ${GNUEFI_DIRECTORY}/elf_x86_64_efi.lds
 
 # Build Binutils as a cross-compiler
 # https://wiki.osdev.org/GCC_Cross-Compiler#Binutils
@@ -160,7 +162,6 @@ ENV PATH="${CROSS_BINUTILS_DIRECTORY}/bin:$PATH"
 
 # Build GCC as a cross-compiler without bootstrapping
 # https://wiki.osdev.org/GCC_Cross-Compiler#GCC
-# TODO: make check
 RUN cd /tmp/cross/gcc/build && \
 	../source/configure --target=${CROSS_TARGET} --prefix=${CROSS_GCC_DIRECTORY} --with-gmp=${GMP_DIRECTORY} --with-mpfr=${MPFR_DIRECTORY} --with-mpc=${MPC_DIRECTORY} --disable-nls --enable-languages=c,c++ --disable-bootstrap --without-headers && \
 	make --jobs ${MAKE_JOBS} all-gcc && \
@@ -177,7 +178,7 @@ RUN apt-get remove --purge --autoremove --yes \
 		bison flex libisl-dev \
 		dejagnu tcl expect && \
 	rm --verbose --force --recursive \
-		/tmp/binutils /tmp/gcc \
+		/tmp/* \
 		/var/lib/apt/lists/*
 
 # ------------------------------------------------------------------------
@@ -197,14 +198,11 @@ RUN mkdir --verbose --parents ${USER_HOME} && \
 	adduser --system --disabled-password --disabled-login --shell /bin/bash --no-create-home --home ${USER_HOME} --gecos ${USER_NAME} --group --uid ${USER_ID} ${USER_NAME} && \
 	usermod --append --groups sudo ${USER_NAME} && \
 	echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
-	chown --changes --recursive ${USER_ID}:${USER_ID} ${USER_HOME} && \	
+	chown --changes --recursive ${USER_ID}:${USER_ID} ${USER_HOME} && \
 	rm --verbose --force --recursive /var/lib/apt/lists/*
 
-# Copy Binutils from the build image
-COPY --from=build --chown=root:root /opt/binutils /opt/binutils
-
-# Copy GCC from the build image
-COPY --from=build --chown=root:root /opt/gcc /opt/gcc
+# Copy all builds from the build images
+COPY --from=build --chown=root:root /opt /opt
 
 # Change to the regular user
 WORKDIR ${USER_HOME}
