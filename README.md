@@ -12,6 +12,14 @@ Of course, I have already programmed C many times in the past, and even done a b
 
 Much of what I learnt has come from the [OSDev Wiki](https://wiki.osdev.org/UEFI) and [x86asm Articles](http://x86asm.net/articles/uefi-programming-first-steps/).
 
+# TO-DO
+
+* Entry-point application (at the EFI boot path) with a menu system that launches the other PE executables for the release disk image containing everything.
+* Application to print out all known vendor and system information.
+* Some sort of text-based or text-user-interface game.
+* Load network driver and send a packet on the network (no idea if this is possible).
+* GitHub Actions workflow to build and publish the huge Docker image so I don't have to.
+
 # Running
 
 To run these executables, download the bootable disk image from [latest release](https://github.com/viral32111/uefi-experiments/releases/latest), which containing all of them. Then boot this disk image on any UEFI-compatible system, or virtual machine of your choosing ([QEMU](https://www.qemu.org/) is recommended).
