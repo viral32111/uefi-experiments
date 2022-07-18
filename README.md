@@ -10,15 +10,27 @@ I have always had a passion for low-level programming, and enjoy learning about 
 
 Of course, I have already programmed C many times in the past, and even done a bit of ARM assembly for a University project, but both of those were making standalone executables that run on an existing operating system, Linux in their cases. However, this represents my first time programming in C for making applications that run in UEFI-space (either via an EFI shell or directly booting them).
 
-Much of what I learnt has come from the [OSDev Wiki](https://wiki.osdev.org/UEFI) and [x86asm Articles](http://x86asm.net/articles/uefi-programming-first-steps/).
+Much of what I learnt has come from the [OSDev Wiki](https://wiki.osdev.org/UEFI), [x86asm Articles](http://x86asm.net/articles/uefi-programming-first-steps/), and the [UEFI specification](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf).
 
-## TO-DO
+## To-Do List
+
+These are things I would like to get done at some point in the future. If I start working on one, I may create a project board to track my progress.
+
+### Applications
 
 * Entry-point application (at the EFI boot path) with a menu system that launches the other PE executables for the release disk image containing everything.
-* Application to print out all known vendor and system information.
+* [Application to print out all known vendor and system information](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf#G8.1001756).
 * Some sort of text-based or text-user-interface game.
-* Load network driver and send a packet on the network (no idea if this is possible).
+* [Send/receive packets on the network](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf#G33.1050570). <sup>[1](https://stackoverflow.com/questions/67045742) [2](https://github.com/vinxue/TcpTransport) [3](https://stackoverflow.com/questions/65923436)</sup>
+* A shell, possibly as a replacement for the entry-point menu system application. Commands can be called, and some commands will run the other PE executables.
+* [Simple bootloader that transfers control to a simple custom kernel](https://wiki.osdev.org/Rolling_Your_Own_Bootloader) (or maybe boots Linux?).
+* 
+
+### Meta
+
 * GitHub Actions workflow to build and publish the huge Docker image so I don't have to.
+* GitHub Actions workflow to build and upload artifacts of all applications.
+* GitHub Actions workflow to perform CodeQL/code scanning.
 
 ## Running
 
