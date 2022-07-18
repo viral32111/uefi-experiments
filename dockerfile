@@ -173,7 +173,7 @@ ENV PATH="${CROSS_GCC_DIRECTORY}/bin:$PATH"
 
 # Remove build dependencies & temporary files
 RUN apt-get remove --purge --autoremove --yes \
-		build-essential \
+		build-essential make \
 		texinfo \
 		bison flex libisl-dev \
 		dejagnu tcl expect && \
@@ -204,12 +204,13 @@ RUN mkdir --verbose --parents ${USER_HOME} && \
 # Copy all builds from the build images
 COPY --from=build --chown=root:root /opt /opt
 
+# Add all the builds to the PATH, and disable writing shell history to file
+ENV PATH="${CROSS_BINUTILS_DIRECTORY}/bin:${CROSS_GCC_DIRECTORY}/bin:${BINUTILS_DIRECTORY}/bin:${GCC_DIRECTORY}/bin:$PATH" \
+	HISTFILE=/dev/null
+
 # Change to the regular user
 WORKDIR ${USER_HOME}
 USER ${USER_ID}:${USER_ID}
-
-# Disable writing shell history to file
-ENV HISTFILE=/dev/null
 
 # Enter into a shell on startup
 ENTRYPOINT [ "/bin/bash" ]
