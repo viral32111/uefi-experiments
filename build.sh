@@ -9,7 +9,7 @@ IMAGE='builder:latest'
 
 # Build the docker image if it does not exist
 if [[ ! docker image inspect $IMAGE ]]; then
-	docker image build --pull --file dockerfile --tag $IMAGE /var/empty
+	docker image build --pull --file dockerfile --tag $IMAGE /var/empty 2>&1 | tee builder.log
 fi
 
 # Run a container to build the application
