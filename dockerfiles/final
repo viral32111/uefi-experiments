@@ -34,7 +34,7 @@ RUN mkdir --verbose --parents ${USER_HOME} && \
 COPY --from=builder:intermediary --chown=root:root /opt /opt
 
 # Add all the builds to the PATH, and disable writing shell history to file
-ENV PATH="${CROSS_BINUTILS_DIRECTORY}/bin:${CROSS_GCC_DIRECTORY}/bin:${BINUTILS_DIRECTORY}/bin:${GCC_DIRECTORY}/bin:$PATH" \
+ENV PATH="$/opt/cross/binutils/bin:/opt/cross/gcc/bin:/opt/binutils/bin:/opt/gcc/bin:$PATH" \
 	HISTFILE=/dev/null
 
 # Change to the regular user

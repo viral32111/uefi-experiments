@@ -3,7 +3,7 @@
 # Everything is divided into separate stages & layers so that if something
 #  breaks you do not have to rebuild the entire image.
 
-# Due to the size of this image (about 16GB), the builds
+# Due to the size of this image (about 16.2GB), the builds
 #  are copied into to the final Docker image.
 
 # Instructions provided by...
