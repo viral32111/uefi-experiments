@@ -6,10 +6,15 @@
 # Due to the use of separated layers, multi-stage builds are
 #  used to reduce the size of the final image size.
 
+# During development you need the header files for GNU-EFI, you should copy
+#  the include (/opt/gnuefi/include) directory from this image to your local
+#  development directory then configure your preferred IDE to use it.
+
 # Instructions provided by...
 #  https://wiki.osdev.org/Building_GCC
 #  https://wiki.osdev.org/GCC_Cross-Compiler
 #  https://gcc.gnu.org/install/
+#  https://wiki.osdev.org/GNU-EFI
 
 # See ./build.sh script for the command to build this image.
 
@@ -40,6 +45,10 @@ ARG MPC_VERSION=1.2.1 \
 ARG GCC_VERSION=12.1.0 \
 	GCC_DIRECTORY=/opt/gcc
 
+# Options for building GNU-EFI
+ARG GNUEFI_VERSION=3.0.14 \
+	GNUEFI_DIRECTORY=/opt/gnuefi
+
 # Options for building the cross-compiler
 ARG CROSS_TARGET=i686-elf \
 	CROSS_BINUTILS_DIRECTORY=/opt/cross/binutils \
@@ -63,20 +72,23 @@ RUN mkdir --verbose --parents \
 		/tmp/mpfr/source /tmp/mpfr/build ${MPFR_DIRECTORY} \
 		/tmp/mpc/source /tmp/mpc/build ${MPC_DIRECTORY} \
 		/tmp/gcc/source /tmp/gcc/build ${GCC_DIRECTORY} \
+		/tmp/gnuefi ${GNUEFI_DIRECTORY} \
 		/tmp/cross/binutils/source /tmp/cross/binutils/build ${CROSS_BINUTILS_DIRECTORY} \
 		/tmp/cross/gcc/source /tmp/cross/gcc/build ${CROSS_GCC_DIRECTORY} && \
 	wget --progress dot:mega --output-document /tmp/binutils/source.tar.gz https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz 2>&1 && \
-	wget --progress dot:mega --output-document /tmp/gcc/source.tar.gz https://mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz 2>&1 && \
 	wget --progress dot:mega --output-document /tmp/gmp/source.tar.gz https://gmplib.org/download/gmp/gmp-${GMP_VERSION}.tar.xz 2>&1 && \
 	wget --progress dot:mega --output-document /tmp/mpfr/source.tar.gz https://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz 2>&1 && \
-	wget --progress dot:mega --output-document /tmp/mpc/source.tar.gz https://ftp.gnu.org/gnu/mpc/mpc-${MPC_VERSION}.tar.gz 2>&1
+	wget --progress dot:mega --output-document /tmp/mpc/source.tar.gz https://ftp.gnu.org/gnu/mpc/mpc-${MPC_VERSION}.tar.gz 2>&1 && \
+	wget --progress dot:mega --output-document /tmp/gcc/source.tar.gz https://mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz 2>&1 && \
+	wget --progress dot:mega --output-document /tmp/gnuefi/source.tar.bz2 https://sourceforge.net/projects/gnu-efi/files/gnu-efi-${GNUEFI_VERSION}.tar.bz2/download 2>&1 && \
 
 # Extract the downloaded source trees
 RUN tar --verbose --extract --strip-components 1 --file /tmp/binutils/source.tar.gz --directory /tmp/binutils/source && \
 	tar --verbose --extract --strip-components 1 --file /tmp/gmp/source.tar.gz --directory /tmp/gmp/source && \
 	tar --verbose --extract --strip-components 1 --file /tmp/mpfr/source.tar.gz --directory /tmp/mpfr/source && \
 	tar --verbose --extract --strip-components 1 --file /tmp/mpc/source.tar.gz --directory /tmp/mpc/source && \
-	tar --verbose --extract --strip-components 1 --file /tmp/gcc/source.tar.gz --directory /tmp/gcc/source
+	tar --verbose --extract --strip-components 1 --file /tmp/gcc/source.tar.gz --directory /tmp/gcc/source && \
+	tar --verbose --extract --strip-components 1 --file /tmp/gnuefi/source.tar.gz --directory /tmp/gnuefi
 
 # Copy source trees for building the cross-compiler
 RUN	cp --verbose --archive /tmp/binutils/source /tmp/cross/binutils && \
@@ -121,15 +133,20 @@ RUN cd /tmp/gcc/build && \
 	make --keep-going check && \
 	make install
 
-# Remove the old compiler & former build dependencies, then reinstall make
+# Remove the old compiler & former build dependencies
 RUN apt-get remove --purge --autoremove --yes \
 		ca-certificates wget \
-		build-essential gcc-multilib \
-		texinfo && \
-	apt-get install --no-install-recommends --yes make
+		gcc g++ gcc-multilib \
+		texinfo
 
 # Add everything that was built to the PATH
 ENV PATH="${BINUTILS_DIRECTORY}/bin:${GMP_DIRECTORY}/bin:${MPFR_DIRECTORY}/bin:${MPC_DIRECTORY}/bin:${GCC_DIRECTORY}/bin:$PATH"
+
+# Build & install GNU-EFI
+# https://wiki.osdev.org/GNU-EFI#Requirements
+RUN cd /tmp/gnuefi && \
+	make --jobs ${MAKE_JOBS} && \
+	make PREFIX=${GNUEFI_DIRECTORY} install
 
 # Build Binutils as a cross-compiler
 # https://wiki.osdev.org/GCC_Cross-Compiler#Binutils
@@ -151,8 +168,12 @@ RUN cd /tmp/cross/gcc/build && \
 	make install-gcc && \
 	make install-target-libgcc
 
+# Add the cross-compiler GCC to the PATH
+ENV PATH="${CROSS_GCC_DIRECTORY}/bin:$PATH"
+
 # Remove build dependencies & temporary files
 RUN apt-get remove --purge --autoremove --yes \
+		build-essential \
 		bison flex libisl-dev \
 		dejagnu tcl expect && \
 	rm --verbose --force --recursive \
