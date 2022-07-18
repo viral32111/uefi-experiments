@@ -1,5 +1,3 @@
-# docker build --pull --file dockerfile --tag compiler:latest /var/empty
-
 # This is a very large image, and will take a while (about an hour on my i7-12700K) to build.
 
 # Everything is divided into separate stages & layers so that if something
@@ -11,7 +9,9 @@
 # Instructions provided by...
 #  https://wiki.osdev.org/Building_GCC
 #  https://wiki.osdev.org/GCC_Cross-Compiler
-#  https://gcc.gnu.org/install/test.html
+#  https://gcc.gnu.org/install/
+
+# See ./build.sh script for the command to build this image.
 
 # Start the build image from Ubuntu LTS
 FROM ubuntu:22.04 AS build
@@ -63,7 +63,7 @@ RUN mkdir --verbose --parents \
 		/tmp/mpfr/source /tmp/mpfr/build ${MPFR_DIRECTORY} \
 		/tmp/mpc/source /tmp/mpc/build ${MPC_DIRECTORY} \
 		/tmp/gcc/source /tmp/gcc/build ${GCC_DIRECTORY} \
-		/tmp/cross/binutils/source /tmp/cross/binutils/build ${CROSS_BINUTILS_DIRECTORY} && \
+		/tmp/cross/binutils/source /tmp/cross/binutils/build ${CROSS_BINUTILS_DIRECTORY} \
 		/tmp/cross/gcc/source /tmp/cross/gcc/build ${CROSS_GCC_DIRECTORY} && \
 	wget --progress dot:mega --output-document /tmp/binutils/source.tar.gz https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz 2>&1 && \
 	wget --progress dot:mega --output-document /tmp/gcc/source.tar.gz https://mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz 2>&1 && \
