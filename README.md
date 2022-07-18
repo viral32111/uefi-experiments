@@ -21,10 +21,9 @@ These are things I would like to get done at some point in the future. If I star
 * Entry-point application (at the EFI boot path) with a menu system that launches the other PE executables for the release disk image containing everything.
 * [Application to print out all known vendor and system information](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf#G8.1001756).
 * Some sort of text-based or text-user-interface game.
-* [Send/receive packets on the network](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf#G33.1050570). <sup>[1](https://stackoverflow.com/questions/67045742) [2](https://github.com/vinxue/TcpTransport) [3](https://stackoverflow.com/questions/65923436)</sup>
+* [Send/receive packets on the network](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf#G33.1050570). <sup>[[1]](https://stackoverflow.com/questions/67045742) [[2]](https://github.com/vinxue/TcpTransport) [[3]](https://stackoverflow.com/questions/65923436)</sup>
 * A shell, possibly as a replacement for the entry-point menu system application. Commands can be called, and some commands will run the other PE executables.
 * [Simple bootloader that transfers control to a simple custom kernel](https://wiki.osdev.org/Rolling_Your_Own_Bootloader) (or maybe boots Linux?).
-* 
 
 ### Meta
 
