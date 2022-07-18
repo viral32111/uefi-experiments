@@ -3,8 +3,8 @@
 # Everything is divided into separate stages & layers so that if something
 #  breaks you do not have to rebuild the entire image.
 
-# Due to the final size of this image (about 16GB), the final
-#  builds are copied to the second Docker image.
+# Due to the size of this image (about 16GB), the builds
+#  are copied into to the final Docker image.
 
 # Instructions provided by...
 #  https://wiki.osdev.org/Building_GCC
@@ -14,11 +14,11 @@
 
 # See ./build.sh script for the command to build this image.
 
-# Start the build image from Ubuntu LTS
+# Start from Ubuntu LTS
 FROM ubuntu:22.04
 
 # Options for building & installing packages
-ARG MAKE_JOBS=20 \
+ARG MAKE_JOBS=12 \
 	DEBIAN_FRONTEND=noninteractive
 
 # Options for downloading source trees
@@ -42,9 +42,15 @@ ARG CROSS_TARGET=i686-elf \
 	CROSS_BINUTILS_DIRECTORY=/opt/cross/binutils \
 	CROSS_GCC_DIRECTORY=/opt/cross/gcc
 
-# Install the dependencies for building
+# Change to a faster mirror & install the dependencies for building
 # https://wiki.osdev.org/Building_GCC#Installing_Dependencies
-RUN apt-get update && \
+RUN printf '%s\n' \
+		'deb http://mirror.cov.ukservers.com/ubuntu/ jammy main restricted universe multiverse' \
+		'deb http://mirror.cov.ukservers.com/ubuntu/ jammy-updates main restricted universe multiverse' \
+		'deb http://mirror.cov.ukservers.com/ubuntu/ jammy-backports main restricted universe multiverse' \
+		'deb http://security.ubuntu.com/ubuntu/ jammy-security main restricted universe multiverse' \
+		| tee /etc/apt/sources.list && \
+	apt-get update && \
 	apt-get install --no-install-recommends --yes \
 		ca-certificates wget \
 		build-essential make \
@@ -169,4 +175,4 @@ RUN apt-get remove --purge --autoremove --yes \
 		/tmp/* \
 		/var/lib/apt/lists/*
 
-# Continues in the second Docker image...
+# Continues in the final Docker image...

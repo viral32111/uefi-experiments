@@ -16,6 +16,12 @@ ARG USER_ID=1000 \
 
 # Create regular user with sudo access
 RUN mkdir --verbose --parents ${USER_HOME} && \
+	printf '%s\n' \
+		'deb http://mirror.cov.ukservers.com/ubuntu/ jammy main restricted universe multiverse' \
+		'deb http://mirror.cov.ukservers.com/ubuntu/ jammy-updates main restricted universe multiverse' \
+		'deb http://mirror.cov.ukservers.com/ubuntu/ jammy-backports main restricted universe multiverse' \
+		'deb http://security.ubuntu.com/ubuntu/ jammy-security main restricted universe multiverse' \
+		| tee /etc/apt/sources.list && \
 	apt-get update && \
 	apt-get install --no-install-recommends --yes sudo && \
 	adduser --system --disabled-password --disabled-login --shell /bin/bash --no-create-home --home ${USER_HOME} --gecos ${USER_NAME} --group --uid ${USER_ID} ${USER_NAME} && \
@@ -25,7 +31,7 @@ RUN mkdir --verbose --parents ${USER_HOME} && \
 	rm --verbose --force --recursive /var/lib/apt/lists/*
 
 # Copy all builds from the intermediary image
-COPY --from=builder:latest --chown=root:root /opt /opt
+COPY --from=builder:intermediary --chown=root:root /opt /opt
 
 # Add all the builds to the PATH, and disable writing shell history to file
 ENV PATH="${CROSS_BINUTILS_DIRECTORY}/bin:${CROSS_GCC_DIRECTORY}/bin:${BINUTILS_DIRECTORY}/bin:${GCC_DIRECTORY}/bin:$PATH" \
