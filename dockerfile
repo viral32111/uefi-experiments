@@ -125,12 +125,12 @@ RUN cd /tmp/mpc/build && \
 	make check && \
 	make install
 
-# Build, test & install GCC with bootstrapping
+# Build & install GCC with bootstrapping
 # https://wiki.osdev.org/Building_GCC#GCC
+# NOTE: We don't run tests here because they take way too long
 RUN cd /tmp/gcc/build && \
 	../source/configure --prefix=${GCC_DIRECTORY} --with-gmp=${GMP_DIRECTORY} --with-mpfr=${MPFR_DIRECTORY} --with-mpc=${MPC_DIRECTORY} --disable-nls --enable-languages=c,c++ && \
 	make --jobs ${MAKE_JOBS} && \
-	make --keep-going check && \
 	make install
 
 # Remove the old compiler & former build dependencies
