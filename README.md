@@ -29,6 +29,7 @@ These are things I would like to get done at some point in the future. If I star
 ### Meta
 
 * GitHub Actions workflow to build and publish the huge Docker image so I don't have to.
+  * Will have to be published to a self-hosted registry as the image is 2.75GB, which is above the limit of the GitHub Container Registry.
 * GitHub Actions workflow to build and upload artifacts of all applications.
 * GitHub Actions workflow to perform CodeQL/code scanning.
 
