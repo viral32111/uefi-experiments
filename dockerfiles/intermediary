@@ -1,14 +1,10 @@
-# This is a very large image, and will take a while (about an hour on my i7-12700K) to build.
+# This is a very large image, and will take a while to build.
 
 # Everything is divided into separate stages & layers so that if something
 #  breaks you do not have to rebuild the entire image.
 
-# Due to the use of separated layers, multi-stage builds are
-#  used to reduce the size of the final image size.
-
-# During development you need the header files for GNU-EFI, you should copy
-#  the include (/opt/gnuefi/include) directory from this image to your local
-#  development directory then configure your preferred IDE to use it.
+# Due to the final size of this image (about 16GB), the final
+#  builds are copied to the second Docker image.
 
 # Instructions provided by...
 #  https://wiki.osdev.org/Building_GCC
@@ -19,34 +15,26 @@
 # See ./build.sh script for the command to build this image.
 
 # Start the build image from Ubuntu LTS
-FROM ubuntu:22.04 AS build
+FROM ubuntu:22.04
 
 # Options for building & installing packages
 ARG MAKE_JOBS=20 \
 	DEBIAN_FRONTEND=noninteractive
 
-# Options for building Binutils
+# Options for downloading source trees
 ARG BINUTILS_VERSION=2.38 \
-	BINUTILS_DIRECTORY=/opt/binutils
+	GMP_VERSION=6.2.1 \
+	MPFR_VERSION=4.1.0 \
+	MPC_VERSION=1.2.1 \
+	GCC_VERSION=12.1.0 \
+	GNUEFI_VERSION=3.0.14
 
-# Options for building GMP
-ARG GMP_VERSION=6.2.1 \
-	GMP_DIRECTORY=/opt/gmp
-
-# Options for building MPFR
-ARG MPFR_VERSION=4.1.0 \
-	MPFR_DIRECTORY=/opt/mpfr
-
-# Options for building MPC
-ARG MPC_VERSION=1.2.1 \
-	MPC_DIRECTORY=/opt/mpc
-
-# Options for building GCC
-ARG GCC_VERSION=12.1.0 \
-	GCC_DIRECTORY=/opt/gcc
-
-# Options for building GNU-EFI
-ARG GNUEFI_VERSION=3.0.14 \
+# Options for building source trees
+ENV BINUTILS_DIRECTORY=/opt/binutils \
+	GMP_DIRECTORY=/opt/gmp \
+	MPFR_DIRECTORY=/opt/mpfr \
+	MPC_DIRECTORY=/opt/mpc \
+	GCC_DIRECTORY=/opt/gcc \
 	GNUEFI_DIRECTORY=/opt/gnuefi
 
 # Options for building the cross-compiler
@@ -181,36 +169,4 @@ RUN apt-get remove --purge --autoremove --yes \
 		/tmp/* \
 		/var/lib/apt/lists/*
 
-# ------------------------------------------------------------------------
-
-# Start the final image from Ubuntu LTS
-FROM ubuntu:22.04
-
-# Options for the regular user
-ARG USER_ID=1000 \
-	USER_NAME=user \
-	USER_HOME=/home/user
-
-# Create regular user with sudo access
-RUN mkdir --verbose --parents ${USER_HOME} && \
-	apt-get update && \
-	apt-get install --no-install-recommends --yes sudo && \
-	adduser --system --disabled-password --disabled-login --shell /bin/bash --no-create-home --home ${USER_HOME} --gecos ${USER_NAME} --group --uid ${USER_ID} ${USER_NAME} && \
-	usermod --append --groups sudo ${USER_NAME} && \
-	echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
-	chown --changes --recursive ${USER_ID}:${USER_ID} ${USER_HOME} && \
-	rm --verbose --force --recursive /var/lib/apt/lists/*
-
-# Copy all builds from the build images
-COPY --from=build --chown=root:root /opt /opt
-
-# Add all the builds to the PATH, and disable writing shell history to file
-ENV PATH="${CROSS_BINUTILS_DIRECTORY}/bin:${CROSS_GCC_DIRECTORY}/bin:${BINUTILS_DIRECTORY}/bin:${GCC_DIRECTORY}/bin:$PATH" \
-	HISTFILE=/dev/null
-
-# Change to the regular user
-WORKDIR ${USER_HOME}
-USER ${USER_ID}:${USER_ID}
-
-# Enter into a shell on startup
-ENTRYPOINT [ "/bin/bash" ]
+# Continues in the second Docker image...

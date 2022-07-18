@@ -1,5 +1,5 @@
 # GNU-EFI
 gnu-efi/
 
-# Docker image build log
-builder.log
+# Build logs
+logs/

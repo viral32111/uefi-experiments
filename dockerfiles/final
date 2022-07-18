@@ -1,0 +1,39 @@
+# The final size of this image is about 2.75GB.
+
+# During development you need the header files for GNU-EFI, you should copy
+#  the include (/opt/gnuefi/include) directory from this image to your local
+#  development directory then configure your preferred IDE to use it.
+
+# See ./build.sh script for the command to build this image.
+
+# Start from Ubuntu LTS
+FROM ubuntu:22.04
+
+# Options for the regular user
+ARG USER_ID=1000 \
+	USER_NAME=user \
+	USER_HOME=/home/user
+
+# Create regular user with sudo access
+RUN mkdir --verbose --parents ${USER_HOME} && \
+	apt-get update && \
+	apt-get install --no-install-recommends --yes sudo && \
+	adduser --system --disabled-password --disabled-login --shell /bin/bash --no-create-home --home ${USER_HOME} --gecos ${USER_NAME} --group --uid ${USER_ID} ${USER_NAME} && \
+	usermod --append --groups sudo ${USER_NAME} && \
+	echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
+	chown --changes --recursive ${USER_ID}:${USER_ID} ${USER_HOME} && \
+	rm --verbose --force --recursive /var/lib/apt/lists/*
+
+# Copy all builds from the intermediary image
+COPY --from=builder:latest --chown=root:root /opt /opt
+
+# Add all the builds to the PATH, and disable writing shell history to file
+ENV PATH="${CROSS_BINUTILS_DIRECTORY}/bin:${CROSS_GCC_DIRECTORY}/bin:${BINUTILS_DIRECTORY}/bin:${GCC_DIRECTORY}/bin:$PATH" \
+	HISTFILE=/dev/null
+
+# Change to the regular user
+WORKDIR ${USER_HOME}
+USER ${USER_ID}:${USER_ID}
+
+# Enter into a shell on startup
+ENTRYPOINT [ "/bin/bash" ]
