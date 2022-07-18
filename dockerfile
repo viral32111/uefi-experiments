@@ -136,11 +136,10 @@ RUN cd /tmp/gcc/build && \
 # Remove the old compiler & former build dependencies
 RUN apt-get remove --purge --autoremove --yes \
 		ca-certificates wget \
-		gcc g++ gcc-multilib \
-		texinfo
+		gcc g++ gcc-multilib
 
-# Add everything that was built to the PATH
-ENV PATH="${BINUTILS_DIRECTORY}/bin:${GMP_DIRECTORY}/bin:${MPFR_DIRECTORY}/bin:${MPC_DIRECTORY}/bin:${GCC_DIRECTORY}/bin:$PATH"
+# Add Binutils and GCC to the PATH
+ENV PATH="${BINUTILS_DIRECTORY}/bin:${GCC_DIRECTORY}/bin:$PATH"
 
 # Build & install GNU-EFI
 # https://wiki.osdev.org/GNU-EFI#Requirements
@@ -175,6 +174,7 @@ ENV PATH="${CROSS_GCC_DIRECTORY}/bin:$PATH"
 # Remove build dependencies & temporary files
 RUN apt-get remove --purge --autoremove --yes \
 		build-essential \
+		texinfo \
 		bison flex libisl-dev \
 		dejagnu tcl expect && \
 	rm --verbose --force --recursive \
