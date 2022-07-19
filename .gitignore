@@ -3,3 +3,8 @@ gnu-efi/
 
 # Build logs
 logs/
+
+# Build files
+*.o
+*.so
+*.efi
