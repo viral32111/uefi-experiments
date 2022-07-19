@@ -143,18 +143,19 @@ RUN cd /tmp/gnuefi && \
 	mv -v ${GNUEFI_DIRECTORY}/lib/crt0-efi-x86_64.o ${GNUEFI_DIRECTORY}/crt0-efi-x86_64.o && \
 	mv -v ${GNUEFI_DIRECTORY}/lib/elf_x86_64_efi.lds ${GNUEFI_DIRECTORY}/elf_x86_64_efi.lds
 
-# Build Binutils as a cross-compiler
+# Build cross-Binutils
 # https://wiki.osdev.org/GCC_Cross-Compiler#Binutils
 RUN cd /tmp/cross/binutils/build && \
 	../source/configure --target=${CROSS_TARGET} --prefix=${CROSS_BINUTILS_DIRECTORY} --with-sysroot --disable-nls --disable-werror && \
 	make --jobs ${MAKE_JOBS} && \
 	make install
 
-# Add the cross-compiler Binutils to the PATH
+# Add the cross-Binutils to the PATH
 ENV PATH="${CROSS_BINUTILS_DIRECTORY}/bin:$PATH"
 
-# Build GCC as a cross-compiler without bootstrapping
+# Build cross-compiler (GCC) without bootstrapping
 # https://wiki.osdev.org/GCC_Cross-Compiler#GCC
+# https://wiki.osdev.org/Why_do_I_need_a_Cross_Compiler
 RUN cd /tmp/cross/gcc/build && \
 	../source/configure --target=${CROSS_TARGET} --prefix=${CROSS_GCC_DIRECTORY} --with-gmp=${GMP_DIRECTORY} --with-mpfr=${MPFR_DIRECTORY} --with-mpc=${MPC_DIRECTORY} --disable-nls --enable-languages=c,c++ --disable-bootstrap --without-headers && \
 	make --jobs ${MAKE_JOBS} all-gcc && \
@@ -162,7 +163,7 @@ RUN cd /tmp/cross/gcc/build && \
 	make install-gcc && \
 	make install-target-libgcc
 
-# Add the cross-compiler GCC to the PATH
+# Add the cross-compiler to the PATH
 ENV PATH="${CROSS_GCC_DIRECTORY}/bin:$PATH"
 
 # Remove build dependencies & temporary files
