@@ -26,6 +26,7 @@ ARG BINUTILS_VERSION=2.38 \
 	GMP_VERSION=6.2.1 \
 	MPFR_VERSION=4.1.0 \
 	MPC_VERSION=1.2.1 \
+	ISL_VERSION=0.25 \
 	GCC_VERSION=12.1.0 \
 	GNUEFI_VERSION=3.0.14
 
@@ -34,13 +35,14 @@ ENV BINUTILS_DIRECTORY=/opt/binutils \
 	GMP_DIRECTORY=/opt/gmp \
 	MPFR_DIRECTORY=/opt/mpfr \
 	MPC_DIRECTORY=/opt/mpc \
+	ISL_DIRECTORY=/opt/isl \
 	GCC_DIRECTORY=/opt/gcc \
 	GNUEFI_DIRECTORY=/opt/gnuefi
 
 # Options for building the cross-compiler
 ARG CROSS_TARGET=i686-elf \
-	CROSS_BINUTILS_DIRECTORY=/opt/cross/binutils \
-	CROSS_GCC_DIRECTORY=/opt/cross/gcc
+	CROSS_BINUTILS_DIRECTORY=/opt/cross/${CROSS_TARGET}/binutils \
+	CROSS_GCC_DIRECTORY=/opt/cross/${CROSS_TARGET}/gcc
 
 # Change to a faster mirror & install the dependencies for building
 # https://wiki.osdev.org/Building_GCC#Installing_Dependencies
@@ -65,14 +67,16 @@ RUN mkdir --verbose --parents \
 		/tmp/gmp/source /tmp/gmp/build ${GMP_DIRECTORY} \
 		/tmp/mpfr/source /tmp/mpfr/build ${MPFR_DIRECTORY} \
 		/tmp/mpc/source /tmp/mpc/build ${MPC_DIRECTORY} \
+		/tmp/isl/source /tmp/isl/build ${MPC_DIRECTORY} \
 		/tmp/gcc/source /tmp/gcc/build ${GCC_DIRECTORY} \
 		/tmp/gnuefi ${GNUEFI_DIRECTORY} \
-		/tmp/cross/binutils/source /tmp/cross/binutils/build ${CROSS_BINUTILS_DIRECTORY} \
-		/tmp/cross/gcc/source /tmp/cross/gcc/build ${CROSS_GCC_DIRECTORY} && \
+		/tmp/cross/${CROSS_TARGET}/binutils/source /tmp/cross/${CROSS_TARGET}/binutils/build ${CROSS_BINUTILS_DIRECTORY} \
+		/tmp/cross/${CROSS_TARGET}/gcc/source /tmp/cross/${CROSS_TARGET}/gcc/build ${CROSS_GCC_DIRECTORY} && \
 	wget --progress dot:mega --output-document /tmp/binutils/source.tar.gz https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz 2>&1 && \
 	wget --progress dot:mega --output-document /tmp/gmp/source.tar.gz https://gmplib.org/download/gmp/gmp-${GMP_VERSION}.tar.xz 2>&1 && \
 	wget --progress dot:mega --output-document /tmp/mpfr/source.tar.gz https://www.mpfr.org/mpfr-${MPFR_VERSION}/mpfr-${MPFR_VERSION}.tar.gz 2>&1 && \
 	wget --progress dot:mega --output-document /tmp/mpc/source.tar.gz https://ftp.gnu.org/gnu/mpc/mpc-${MPC_VERSION}.tar.gz 2>&1 && \
+	wget --progress dot:mega --output-document /tmp/isl/source.tar.gz https://libisl.sourceforge.io/isl-${ISL_VERSION}.tar.gz 2>&1 && \
 	wget --progress dot:mega --output-document /tmp/gcc/source.tar.gz https://mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz 2>&1 && \
 	wget --progress dot:mega --output-document /tmp/gnuefi/source.tar.bz2 https://sourceforge.net/projects/gnu-efi/files/gnu-efi-${GNUEFI_VERSION}.tar.bz2/download 2>&1
 
@@ -81,12 +85,13 @@ RUN tar --verbose --extract --strip-components 1 --file /tmp/binutils/source.tar
 	tar --verbose --extract --strip-components 1 --file /tmp/gmp/source.tar.gz --directory /tmp/gmp/source && \
 	tar --verbose --extract --strip-components 1 --file /tmp/mpfr/source.tar.gz --directory /tmp/mpfr/source && \
 	tar --verbose --extract --strip-components 1 --file /tmp/mpc/source.tar.gz --directory /tmp/mpc/source && \
+	tar --verbose --extract --strip-components 1 --file /tmp/isl/source.tar.gz --directory /tmp/isl/source && \
 	tar --verbose --extract --strip-components 1 --file /tmp/gcc/source.tar.gz --directory /tmp/gcc/source && \
 	tar --verbose --extract --strip-components 1 --file /tmp/gnuefi/source.tar.bz2 --directory /tmp/gnuefi
 
 # Copy source trees for building the cross-compiler
-RUN	cp --verbose --archive /tmp/binutils/source /tmp/cross/binutils && \
-	cp --verbose --archive /tmp/gcc/source /tmp/cross/gcc
+RUN	cp --verbose --archive /tmp/binutils/source /tmp/cross/${CROSS_TARGET}/binutils && \
+	cp --verbose --archive /tmp/gcc/source /tmp/cross/${CROSS_TARGET}/gcc
 
 # Build & install Binutils (this is quick)
 # https://wiki.osdev.org/Building_GCC#Binutils
@@ -119,11 +124,23 @@ RUN cd /tmp/mpc/build && \
 	make check && \
 	make install
 
+# Build, test & install ISL
+# https://libisl.sourceforge.io/user.html
+RUN cd /tmp/isl/build && \
+	../source/configure --prefix=${ISL_DIRECTORY} --with-int=gmp --with-gmp-prefix=${GMP_DIRECTORY} && \
+	make --jobs ${MAKE_JOBS} && \
+	make check && \
+	make install
+
+# Add libraries to PATH
+ENV LD_LIBRARY_PATH="${BINUTILS_DIRECTORY}/lib:${GMP_DIRECTORY}/lib:${MPFR_DIRECTORY}/lib:${MPC_DIRECTORY}/lib:${ISL_DIRECTORY}/lib:$LD_LIBRARY_PATH"
+
 # Build & install GCC with bootstrapping
 # https://wiki.osdev.org/Building_GCC#GCC
+# https://gcc.gnu.org/install/configure.html
 # NOTE: We don't run tests here because they take way too long
 RUN cd /tmp/gcc/build && \
-	../source/configure --prefix=${GCC_DIRECTORY} --with-gmp=${GMP_DIRECTORY} --with-mpfr=${MPFR_DIRECTORY} --with-mpc=${MPC_DIRECTORY} --disable-nls --enable-languages=c,c++ && \
+	../source/configure --prefix=${GCC_DIRECTORY} --with-gmp=${GMP_DIRECTORY} --with-mpfr=${MPFR_DIRECTORY} --with-mpc=${MPC_DIRECTORY} --with-isl=${ISL_DIRECTORY} --disable-nls --enable-languages=c,c++ && \
 	make --jobs ${MAKE_JOBS} && \
 	make install
 
@@ -145,7 +162,7 @@ RUN cd /tmp/gnuefi && \
 
 # Build cross-Binutils
 # https://wiki.osdev.org/GCC_Cross-Compiler#Binutils
-RUN cd /tmp/cross/binutils/build && \
+RUN cd /tmp/cross/${CROSS_TARGET}/binutils/build && \
 	../source/configure --target=${CROSS_TARGET} --prefix=${CROSS_BINUTILS_DIRECTORY} --with-sysroot --disable-nls --disable-werror && \
 	make --jobs ${MAKE_JOBS} && \
 	make install
@@ -156,8 +173,8 @@ ENV PATH="${CROSS_BINUTILS_DIRECTORY}/bin:$PATH"
 # Build cross-compiler (GCC) without bootstrapping
 # https://wiki.osdev.org/GCC_Cross-Compiler#GCC
 # https://wiki.osdev.org/Why_do_I_need_a_Cross_Compiler
-RUN cd /tmp/cross/gcc/build && \
-	../source/configure --target=${CROSS_TARGET} --prefix=${CROSS_GCC_DIRECTORY} --with-gmp=${GMP_DIRECTORY} --with-mpfr=${MPFR_DIRECTORY} --with-mpc=${MPC_DIRECTORY} --disable-nls --enable-languages=c,c++ --disable-bootstrap --without-headers && \
+RUN cd /tmp/cross/${CROSS_TARGET}/gcc/build && \
+	../source/configure --target=${CROSS_TARGET} --prefix=${CROSS_GCC_DIRECTORY} --with-gmp=${GMP_DIRECTORY} --with-mpfr=${MPFR_DIRECTORY} --with-mpc=${MPC_DIRECTORY} --with-isl=${ISL_DIRECTORY} --disable-nls --enable-languages=c,c++ --disable-bootstrap --without-headers && \
 	make --jobs ${MAKE_JOBS} all-gcc && \
 	make --jobs ${MAKE_JOBS} all-target-libgcc && \
 	make install-gcc && \

@@ -33,8 +33,10 @@ RUN mkdir --verbose --parents ${USER_HOME} && \
 # Copy all builds from the intermediary image
 COPY --from=builder:intermediary --chown=root:root /opt /opt
 
-# Add all the builds to the PATH, and disable writing shell history to file
-ENV PATH="$/opt/cross/binutils/bin:/opt/cross/gcc/bin:/opt/binutils/bin:/opt/gcc/bin:$PATH" \
+# Add all the builds and libraries to the PATH, and disable writing shell history to file
+# TODO: Figure out a way to use PATH and LD_LIBRARY_PATH from the intermediary image as these are already set there
+ENV PATH="$/opt/cross/i686-elf/binutils/bin:/opt/cross/i686-elf/gcc/bin:/opt/binutils/bin:/opt/gcc/bin:$PATH" \
+	LD_LIBRARY_PATH="/opt/binutils/lib:/opt/gmp/lib:/opt/mpfr/lib:/opt/mpc/lib:/opt/isl/lib:$LD_LIBRARY_PATH"
 	HISTFILE=/dev/null
 
 # Change to the regular user
