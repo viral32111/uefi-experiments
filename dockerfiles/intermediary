@@ -41,8 +41,8 @@ ENV BINUTILS_DIRECTORY=/opt/binutils \
 
 # Options for building the cross-compiler
 ARG CROSS_TARGET=i686-elf \
-	CROSS_BINUTILS_DIRECTORY=/opt/cross/${CROSS_TARGET}/binutils \
-	CROSS_GCC_DIRECTORY=/opt/cross/${CROSS_TARGET}/gcc
+	CROSS_BINUTILS_DIRECTORY=/opt/cross/i686-elf/binutils \
+	CROSS_GCC_DIRECTORY=/opt/cross/i686-elf/gcc
 
 # Change to a faster mirror & install the dependencies for building
 # https://wiki.osdev.org/Building_GCC#Installing_Dependencies

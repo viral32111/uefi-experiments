@@ -8,7 +8,7 @@ NAME='builder'
 HUB='viral32111/uefi-experiments:latest'
 
 # Do not continue unless we have all the arguments
-if [[ "$#" -ne 1 ]]; then
+if [[ "$#" -lt 1 ]]; then
 	echo "Usage: $0 < docker [ intermediary | final ] | applications >" 1>&2
 	exit 1
 fi
