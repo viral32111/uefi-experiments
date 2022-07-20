@@ -2,7 +2,7 @@
 
 This is going to be my collection of applications I have made from experimenting with creating UEFI executables.
 
-**There is currently just a single *[Hello World](hello-world/)* application. Check the [0.1.0 release](https://github.com/viral32111/uefi-experiments/releases/tag/0.1.0) for additional information, a screenshot, and downloads. However, I plan to make many more once I have optimised my toolchain.**
+**There is currently just a single *[Hello World](hello-world/)* application. Check the [0.1.0 release](https://github.com/viral32111/uefi-experiments/releases/tag/0.1.0) for additional information, a screenshot, and downloads. However, I plan to make many more (see application to-do list below) once I have optimised my toolchain.**
 
 ## Background
 
@@ -24,11 +24,14 @@ These are things I would like to get done at some point in the future. If I star
 * [Send/receive packets on the network](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_9_2021_03_18.pdf#G33.1050570). <sup>[[1]](https://stackoverflow.com/questions/67045742) [[2]](https://github.com/vinxue/TcpTransport) [[3]](https://stackoverflow.com/questions/65923436)</sup>
 * A shell, possibly as a replacement for the entry-point menu system application. Commands can be called, and some commands will run the other PE executables.
 * [Simple bootloader that transfers control to a simple custom kernel](https://wiki.osdev.org/Rolling_Your_Own_Bootloader) (or maybe boots Linux?).
+* Display Fibonacci sequence up to a certain number.
+* Basic multi-threaded application (not sure if this is possible as pthread is a POSIX/Linux thing).
+* Access framebuffer and draw 2D shapes to screen (not sure if this is possible).
 
 ### Meta
 
 * GitHub Actions workflow to build and publish the huge Docker image so I don't have to.
-  * Will have to be published to a self-hosted registry as the image is 2.75GB, which is above the limit of the GitHub Container Registry.
+  * Will have to publish to Docker Hub as the image is too large for the GitHub Container Registry.
 * GitHub Actions workflow to build and upload artifacts of all applications.
 * GitHub Actions workflow to perform CodeQL/code scanning.
 
