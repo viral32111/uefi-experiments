@@ -4,8 +4,8 @@
 set -e
 
 # Docker options
-NAME='builder'
-HUB='viral32111/uefi-experiments:latest'
+NAME='uefi-experiments'
+IMAGE='viral32111/uefi-experiments'
 
 # Do not continue unless we have all the arguments
 if [[ "$#" -lt 1 ]]; then
@@ -15,7 +15,7 @@ fi
 
 # Easy access to arguments
 ACTION="$1"
-IMAGE="$2"
+STEP="$2"
 
 # Do not continue if action is empty
 if [[ -z "$ACTION" ]]; then
@@ -34,38 +34,39 @@ if [[ "$ACTION" = "docker" ]]; then
 	# Download the base image in case of any updates
 	docker image pull ubuntu:22.04
 
-	# Build just the intermediary image
-	if [[ "$IMAGE" = "intermediary" ]]; then
-		docker image build --file dockerfiles/intermediary --tag "${NAME}:intermediary" /var/empty 2>&1 | tee logs/docker/intermediary.log
+	# Just build the intermediary image
+	if [[ "$STEP" = "intermediary" ]]; then
+		docker image build --file dockerfiles/intermediary --tag "${IMAGE}:intermediary" /var/empty 2>&1 | tee logs/docker/intermediary.log
 
-	# Build just the final image
-	elif [[ "$IMAGE" = "final" ]]; then
-		docker image build --file dockerfiles/final --tag "${NAME}:final" /var/empty 2>&1 | tee logs/docker/final.log
-
-		docker tag "$NAME:final" "${HUB}"
+	# Just build the final image
+	elif [[ "$STEP" = "final" ]]; then
+		docker image build --file dockerfiles/final --tag "${IMAGE}:latest" /var/empty 2>&1 | tee logs/docker/final.log
 
 	# Build all images
 	else
-		docker image build --file dockerfiles/intermediary --tag "${NAME}:intermediary" /var/empty 2>&1 | tee logs/docker/intermediary.log
-		docker image build --file dockerfiles/final --tag "${NAME}:final" /var/empty 2>&1 | tee logs/docker/final.log
-
-		docker tag "$NAME:final" "${HUB}"
+		docker image build --file dockerfiles/intermediary --tag "${IMAGE}:intermediary" /var/empty 2>&1 | tee logs/docker/intermediary.log
+		docker image build --file dockerfiles/final --tag "${IMAGE}:latest" /var/empty 2>&1 | tee logs/docker/final.log
 	fi
 
 # Run a container to build the applications
 elif [[ "$ACTION" = "applications" ]]; then
 
-	# TODO: Run GCC instead of Bash
+	# TODO: Run GCC
 	docker run \
 		--name "${NAME}" \
 		--hostname "${NAME}" \
-		--mount type=bind,source=$PWD/applications,target=/applications \
-		--workdir /applications \
+		--mount type=bind,source=$PWD/applications,target=/applications,readonly \
+		--mount type=bind,source=$PWD/scripts,target=/scripts,readonly \
+		--workdir /tmp \
 		--entrypoint bash \
 		--interactive \
 		--tty \
 		--rm \
-		"${HUB}"
+		"${IMAGE}:latest"
+
+	# docker cp uefi-experiments:/tmp/image.img helloworlds.img
+
+# TODO: Action for creating the disk image
 
 # Unrecognised action
 else

@@ -43,9 +43,13 @@ Alternatively, download each PE (`.efi`) executable file from the release and ma
 
 ## Building
 
-To build these executables a cross-compiler for `i686-elf` and the [GNU-EFI library](https://sourceforge.net/projects/gnu-efi/files/) are required.
+To build these executables GCC and the [GNU-EFI library](https://sourceforge.net/projects/gnu-efi/files/) are required.
 
 The included [Docker image](dockerfile) can be built to get these in an isolated environment, as to not bloat your local system.
+
+The [`build-applications.bash`](/scripts/build-applications.bash) script will compile each application.
+
+The [`create-image.bash`](/scripts/create-image.bash) script will create a bootable disk image file containing the applications.
 
 ## License
 

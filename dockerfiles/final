@@ -1,4 +1,4 @@
-# The final size of this image is about 2.75GB.
+# The final size of this image is roughly 2.75GB.
 
 # During development you need the header files for GNU-EFI, you should copy
 #  the include (/opt/gnuefi/include) directory from this image to your local
@@ -14,7 +14,7 @@ ARG USER_ID=1000 \
 	USER_NAME=user \
 	USER_HOME=/home/user
 
-# Create regular user with sudo access
+# Create regular user with sudo access & install tools
 RUN mkdir --verbose --parents ${USER_HOME} && \
 	printf '%s\n' \
 		'deb http://mirror.cov.ukservers.com/ubuntu/ jammy main restricted universe multiverse' \
@@ -23,7 +23,7 @@ RUN mkdir --verbose --parents ${USER_HOME} && \
 		'deb http://security.ubuntu.com/ubuntu/ jammy-security main restricted universe multiverse' \
 		| tee /etc/apt/sources.list && \
 	apt-get update && \
-	apt-get install --no-install-recommends --yes sudo && \
+	apt-get install --no-install-recommends --yes sudo udev parted dosfstools mtools && \
 	adduser --system --disabled-password --disabled-login --shell /bin/bash --no-create-home --home ${USER_HOME} --gecos ${USER_NAME} --group --uid ${USER_ID} ${USER_NAME} && \
 	usermod --append --groups sudo ${USER_NAME} && \
 	echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \

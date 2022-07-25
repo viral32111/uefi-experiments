@@ -1,10 +1,16 @@
-# GNU-EFI
-gnu-efi/
+# Library headers
+include/
 
-# Build logs
+# Build script logs
 logs/
 
-# Build files
+# Intermediary build files
 *.o
 *.so
+
+# PE executable files
 *.efi
+
+# Disk images
+*.iso
+*.img

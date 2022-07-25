@@ -40,6 +40,7 @@ ENV BINUTILS_DIRECTORY=/opt/binutils \
 	GNUEFI_DIRECTORY=/opt/gnuefi
 
 # Options for building the cross-compiler
+# TODO: Better system for when I add the x86-64-elf cross compiler
 ARG CROSS_TARGET=i686-elf \
 	CROSS_BINUTILS_DIRECTORY=/opt/cross/i686-elf/binutils \
 	CROSS_GCC_DIRECTORY=/opt/cross/i686-elf/gcc
