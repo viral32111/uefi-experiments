@@ -1,8 +1,8 @@
 # Library headers
 include/
 
-# Build script logs
-logs/
+# Build logs
+dockerfiles/logs/
 
 # Intermediary build files
 *.o
