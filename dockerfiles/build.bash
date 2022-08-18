@@ -5,7 +5,7 @@ set -e
 
 # Configuration
 LOGS_DIRECTORY="logs"
-IMAGE_NAME="viral32111/operating-system"
+IMAGE_NAME="viral32111/uefi-experiments"
 
 # Do not continue unless we have all the arguments
 if [[ "$#" -lt 1 ]] || [[ -z "$1" ]]; then
@@ -40,7 +40,7 @@ function build-gcc-cross-compiler {
 		--tag "${IMAGE_NAME}:gcc-${1}" \
 		--cache-from "${IMAGE_NAME}:gcc-native" \
 		--cache-from "${IMAGE_NAME}:gcc-${1}" \
-		--build-arg "CROSS_COMPILER_TARGET=${1}" \
+		--build-arg CROSS_COMPILER_TARGET=${1} \
 		--build-arg BUILDKIT_INLINE_CACHE=1 \
 		/var/empty 2>&1 | tee "${LOGS_DIRECTORY}/gcc-${1}.log"
 }

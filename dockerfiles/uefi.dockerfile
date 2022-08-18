@@ -1,5 +1,5 @@
 # Start from the i686-elf GCC cross-compiler image for the configuration stage
-FROM viral32111/operating-system:gcc-i686-elf AS config
+FROM viral32111/uefi-experiments:gcc-i686-elf AS config
 
 # Number of jobs to run in parallel when building
 ARG MAKE_JOB_COUNT=12

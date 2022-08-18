@@ -1,11 +1,11 @@
 # Start from the native GCC image for the configuration stage
-FROM viral32111/operating-system:gcc-native AS config
+FROM viral32111/uefi-experiments:gcc-native AS config
 
 # Number of jobs to run in parallel when building
 ARG MAKE_JOB_COUNT=12
 
 # The cross-compiler target architecture
-ENV CROSS_COMPILER_TARGET=i686-elf
+ARG CROSS_COMPILER_TARGET=i686-elf
 
 # The cross-compiler build tools
 # TODO: Use the versions from the config stage of the native GCC image
