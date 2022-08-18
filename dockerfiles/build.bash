@@ -82,8 +82,6 @@ if [[ "$1" = "build" ]]; then
 		build-gcc-cross-compiler "$2"
 	fi
 
-	# TODO: Build an image based on i686-elf with GNU-EFI for compiling UEFI applications
-
 # If the action is to push the images...
 elif [[ "$1" = "push" ]]; then
 
@@ -91,7 +89,7 @@ elif [[ "$1" = "push" ]]; then
 	IMAGE_LIST=$(docker image ls --format '{{ .Repository }}:{{ .Tag }}' | grep "^${IMAGE_NAME}:")
 
 	# Push each of those images to their registry
-	for IMAGE in "${IMAGE_LIST}"; do
+	for IMAGE in ${IMAGE_LIST}; do
 		docker image push "${IMAGE}"
 	done
 
