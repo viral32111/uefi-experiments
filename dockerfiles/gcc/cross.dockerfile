@@ -33,7 +33,7 @@ RUN mkdir --verbose --parents ${CROSS_COMPILER_BINUTILS_DIRECTORY} /tmp/binutils
 	wget --no-hsts --progress dot:mega --output-document /tmp/binutils/source.tar.gz https://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz 2>&1 && \
 	tar --verbose --extract --strip-components 1 --file /tmp/binutils/source.tar.gz --directory /tmp/binutils/source && \
 	cd /tmp/binutils/build && \
-	/tmp/binutils/source/configure --target=${CROSS_COMPILER_TARGET} --prefix=${CROSS_COMPILER_BINUTILS_DIRECTORY} --with-gmp=${GMP_DIRECTORY} --with-mpfr=${MPFR_DIRECTORY} --with-mpc=${MPC_DIRECTORY} --with-isl=${ISL_DIRECTORY} --with-sysroot --disable-nls --disable-werror && \
+	/tmp/binutils/source/configure --target=${CROSS_COMPILER_TARGET} --prefix=${CROSS_COMPILER_BINUTILS_DIRECTORY} --with-gmp=${GMP_DIRECTORY} --with-mpfr=${MPFR_DIRECTORY} --with-mpc=${MPC_DIRECTORY} --with-isl=${ISL_DIRECTORY} --with-sysroot --disable-nls --disable-werror --disable-multilib && \
 	make --jobs ${MAKE_JOB_COUNT} && \
 	make install && \
 	rm --verbose --recursive /tmp/binutils
@@ -41,13 +41,14 @@ RUN mkdir --verbose --parents ${CROSS_COMPILER_BINUTILS_DIRECTORY} /tmp/binutils
 # Build cross-compiler GCC (without bootstrapping)
 # https://wiki.osdev.org/GCC_Cross-Compiler#GCC
 # https://wiki.osdev.org/Why_do_I_need_a_Cross_Compiler
+# https://gcc.gnu.org/install/build.html#Building-a-cross-compiler
 # NOTE: Tests are not ran because they take too long
 ARG PATH=${CROSS_COMPILER_BINUTILS_DIRECTORY}/bin:$PATH
 RUN mkdir --verbose --parents ${CROSS_COMPILER_GCC_DIRECTORY} /tmp/gcc/source /tmp/gcc/build && \
 	wget --no-hsts --progress dot:mega --output-document /tmp/gcc/source.tar.gz https://mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz 2>&1 && \
 	tar --verbose --extract --strip-components 1 --file /tmp/gcc/source.tar.gz --directory /tmp/gcc/source && \
 	cd /tmp/gcc/build && \
-	/tmp/gcc/source/configure --target=${CROSS_COMPILER_TARGET} --prefix=${CROSS_COMPILER_GCC_DIRECTORY} --with-gmp=${GMP_DIRECTORY} --with-mpfr=${MPFR_DIRECTORY} --with-mpc=${MPC_DIRECTORY} --with-isl=${ISL_DIRECTORY} --disable-nls --enable-languages=c,c++ --disable-bootstrap --without-headers && \
+	/tmp/gcc/source/configure --target=${CROSS_COMPILER_TARGET} --prefix=${CROSS_COMPILER_GCC_DIRECTORY} --with-gmp=${GMP_DIRECTORY} --with-mpfr=${MPFR_DIRECTORY} --with-mpc=${MPC_DIRECTORY} --with-isl=${ISL_DIRECTORY} --disable-nls --enable-languages=c,c++ --disable-bootstrap --without-headers --disable-multilib && \
 	make --jobs ${MAKE_JOB_COUNT} all-gcc && \
 	make --jobs ${MAKE_JOB_COUNT} all-target-libgcc && \
 	make install-gcc && \
