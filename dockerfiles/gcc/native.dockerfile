@@ -119,8 +119,6 @@ RUN apt-get remove --purge --autoremove --yes \
 		m4 \
 		gcc-multilib texinfo bison && \
 	rm --verbose --recursive /var/lib/apt/lists/*
-# flex libisl-dev dejagnu tcl expect
-# file
 
 ###############################################
 
@@ -133,7 +131,6 @@ COPY --from=build --chown=root:root /opt /opt
 # Add the libraries & build tool libraries to the linker path, and the build tools to the binaries path
 ENV LD_LIBRARY_PATH=${GMP_DIRECTORY}/lib:${MPFR_DIRECTORY}/lib:${MPC_DIRECTORY}/lib:${ISL_DIRECTORY}/lib:${BINUTILS_DIRECTORY}/lib:${GCC_DIRECTORY}/lib:$LD_LIBRARY_PATH \
 	PATH=${BINUTILS_DIRECTORY}/bin:${GCC_DIRECTORY}/bin:$PATH
-#LD_RUN_PATH=${GMP_DIRECTORY}/lib:${MPFR_DIRECTORY}/lib:${MPC_DIRECTORY}/lib:${ISL_DIRECTORY}/lib:$LD_RUN_PATH
 
 # Install dependencies required to use the build tools
 RUN apt-get update && \

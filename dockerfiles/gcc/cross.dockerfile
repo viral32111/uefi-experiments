@@ -8,7 +8,6 @@ ARG MAKE_JOB_COUNT=12
 ARG CROSS_COMPILER_TARGET=i686-elf
 
 # The cross-compiler build tools
-# TODO: Use the versions from the config stage of the native GCC image
 ENV CROSS_COMPILER_BINUTILS_DIRECTORY=/opt/${CROSS_COMPILER_TARGET}/binutils \
 	CROSS_COMPILER_GCC_DIRECTORY=/opt/${CROSS_COMPILER_TARGET}/gcc
 
@@ -24,10 +23,6 @@ RUN apt-get update && \
 		ca-certificates wget \
 		make \
 		texinfo bison
-# flex libisl-dev dejagnu tcl expect
-# dpkg-dev
-# libc-dev m4
-# file
 
 # ------------------------------------------- #
 
@@ -68,10 +63,6 @@ RUN apt-get remove --purge --autoremove --yes \
 		make \
 		texinfo bison && \
 	rm --verbose --recursive /var/lib/apt/lists/*
-# flex libisl-dev dejagnu tcl expect
-# dpkg-dev
-# libc-dev m4
-# file
 
 ###############################################
 
