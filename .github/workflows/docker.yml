@@ -1,0 +1,124 @@
+name: Docker
+
+on:
+  push:
+    paths:
+      - 'docker/**'
+      - '.github/workflows/docker.yml'
+    branches:
+      - '**'
+    tags:
+      - '*.*.*'
+  schedule:
+    - cron: '0 1 * * 0'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  DOCKER_IMAGE_NAME: gcc
+  DOCKER_REGISTRY_DOMAIN: ghcr.io
+
+jobs:
+  x86_64-pc-linux-gnu:
+    name: x86_64 PC GNU/Linux
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+
+      - name: Login to GitHub Container Registry
+        if: ${{ github.event_name == 'push' && github.event.pull_request == null && !startsWith( github.ref, 'refs/heads/dependabot/' ) }}
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.DOCKER_REGISTRY_DOMAIN }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          platforms: linux/amd64
+
+      - name: Create empty context directory
+        run: mkdir --verbose ./context
+
+      - name: Create metadata for Docker image
+        id: metadata
+        uses: docker/metadata-action@v4
+        with:
+          flavor: latest=false
+          images: ${{ env.DOCKER_REGISTRY_DOMAIN }}/${{ github.repository_owner }}/${{ env.DOCKER_IMAGE_NAME }}
+          tags: type=raw,value=${{ github.job }}
+          labels: |
+            org.opencontainers.image.title=GCC (x86_64 PC GNU/Linux)
+            org.opencontainers.image.description=Native (${{ github.job }}) GCC toolchain.
+            org.opencontainers.image.vendor=${{ github.repository_owner }}
+            com.docker.extension.publisher-url=https://viral32111.com
+
+      - name: Build & push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          push: ${{ github.event_name == 'push' && github.event.pull_request == null && !startsWith( github.ref, 'refs/heads/dependabot/' ) }}
+          file: ./docker/gcc/${{ github.job }}.dockerfile
+          context: ./context
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          no-cache: true
+          pull: true
+
+  i686-elf:
+    name: i686 ELF
+    runs-on: ubuntu-22.04
+    needs: x86_64-pc-linux-gnu
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+
+      - name: Login to GitHub Container Registry
+        if: ${{ github.event_name == 'push' && github.event.pull_request == null && !startsWith( github.ref, 'refs/heads/dependabot/' ) }}
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.DOCKER_REGISTRY_DOMAIN }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          platforms: linux/amd64
+
+      - name: Create empty context directory
+        run: mkdir --verbose ./context
+
+      - name: Create metadata for Docker image
+        id: metadata
+        uses: docker/metadata-action@v4
+        with:
+          flavor: latest=false
+          images: ${{ env.DOCKER_REGISTRY_DOMAIN }}/${{ github.repository_owner }}/${{ env.DOCKER_IMAGE_NAME }}
+          tags: type=raw,value=${{ github.job }}
+          labels: |
+            org.opencontainers.image.title=GCC (i686 ELF)
+            org.opencontainers.image.description=Cross-compiled GCC toolchain for ${{ github.job }}.
+            org.opencontainers.image.vendor=${{ github.repository_owner }}
+            com.docker.extension.publisher-url=https://viral32111.com
+
+      - name: Build & push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          push: ${{ github.event_name == 'push' && github.event.pull_request == null && !startsWith( github.ref, 'refs/heads/dependabot/' ) }}
+          file: ./docker/gcc/${{ github.job }}.dockerfile
+          context: ./context
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          no-cache: true
+          pull: true
