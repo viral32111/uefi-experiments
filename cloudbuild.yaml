@@ -10,7 +10,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     secretEnv: [ 'USERNAME' ]
     entrypoint: 'bash'
-    args: [ '-c', 'docker buildx build --progress plain -pull --push --file ./docker/gcc/x86_64-pc-linux-gnu.dockerfile --tag $$USERNAME/gcc:x86_64-pc-linux-gnu /var/empty' ]
+    args: [ '-c', 'docker buildx build --progress plain --pull --push --file ./docker/gcc/x86_64-pc-linux-gnu.dockerfile --tag $$USERNAME/gcc:x86_64-pc-linux-gnu /var/empty' ]
 
 availableSecrets:
   secretManager:
