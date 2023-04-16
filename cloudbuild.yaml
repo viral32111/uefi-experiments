@@ -16,5 +16,5 @@ availableSecrets:
     - versionName: projects/55784484652/secrets/docker-hub-username/versions/1
       env: 'USERNAME'
 
-    - versionName: projects/55784484652/secrets/docker-hub-access-token /versions/1
+    - versionName: projects/55784484652/secrets/docker-hub-access-token/versions/1
       env: 'ACCESS_TOKEN'
