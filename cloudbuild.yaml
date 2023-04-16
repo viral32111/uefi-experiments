@@ -3,13 +3,14 @@ steps:
     args: [ 'echo', 'hello world' ]
 
   - name: 'gcr.io/cloud-builders/docker'
-    entrypoint: 'bash'
     secretEnv: [ 'USERNAME', 'ACCESS_TOKEN' ]
+    entrypoint: 'bash'
     args: [ '-c', 'docker login --username=$$USERNAME --password=$$ACCESS_TOKEN' ]
 
   - name: 'gcr.io/cloud-builders/docker'
     secretEnv: [ 'USERNAME' ]
-    args: [ 'buildx', 'build', '--pull', '--push', '--file', './docker/gcc/x86_64-pc-linux-gnu.dockerfile', '--tag', '$$USERNAME/gcc:x86_64-pc-linux-gnu', '/var/empty' ]
+    entrypoint: 'bash'
+    args: [ '-c', 'buildx build --progress plain -pull --push --file ./docker/gcc/x86_64-pc-linux-gnu.dockerfile --tag $$USERNAME/gcc:x86_64-pc-linux-gnu /var/empty' ]
 
 availableSecrets:
   secretManager:
