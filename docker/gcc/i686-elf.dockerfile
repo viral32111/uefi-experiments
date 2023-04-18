@@ -25,8 +25,7 @@ FROM config AS build
 RUN apt-get update && \
 	apt-get install --no-install-recommends --yes \
 		wget \
-		build-essential m4 gcc-multilib texinfo bison file gawk python3 \
-		libnss3-dev libselinux1-dev && \
+		build-essential m4 gcc-multilib texinfo bison file gawk python3 && \
 	apt-get clean --yes && \
 	rm --verbose --recursive /var/lib/apt/lists/*
 
