@@ -123,3 +123,23 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
           no-cache: true
           pull: true
+
+  maintenance:
+    name: Maintenance
+    runs-on: ubuntu-22.04
+    needs:
+      - x86_64-pc-linux-gnu
+      - i686-elf
+    permissions:
+      packages: write
+    steps:
+      - name: Delete untagged Docker images
+        if: ${{ github.event_name == 'push' && github.event.pull_request == null && !startsWith( github.ref, 'refs/heads/dependabot/' ) }}
+        uses: snok/container-retention-policy@v2
+        with:
+          image-names: ${{ env.DOCKER_IMAGE_NAME }}
+          cut-off: 0 seconds ago UTC
+          keep-at-least: 0
+          untagged-only: true
+          account-type: personal
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN_PACKAGES }}
