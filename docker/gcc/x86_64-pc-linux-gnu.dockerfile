@@ -42,8 +42,7 @@ FROM config AS build
 RUN apt-get update && \
 	apt-get install --no-install-recommends --yes \
 		wget \
-		build-essential m4 gcc-multilib texinfo bison file gawk python3 \
-		libnss3-dev libselinux1-dev && \
+		build-essential m4 gcc-multilib texinfo bison file gawk python3 && \
 	apt-get clean --yes && \
 	rm --verbose --recursive /var/lib/apt/lists/*
 
@@ -106,6 +105,7 @@ RUN mkdir --verbose --parents ${ISL_DIRECTORY} /tmp/isl/source /tmp/isl/build &&
 
 # Build the GNU C library - https://www.gnu.org/software/libc/
 # https://sourceware.org/glibc/wiki/Testing/Builds
+# Depends on libnss3-dev libselinux1-dev?
 #RUN mkdir --verbose --parents ${GLIBC_DIRECTORY} /tmp/glibc/source /tmp/glibc/build && \
 #	wget --no-hsts --progress dot:mega --output-document /tmp/glibc/source.tar.gz https://ftp.gnu.org/gnu/glibc/glibc-${GLIBC_VERSION}.tar.gz 2>&1 && \
 #	tar --verbose --extract --no-same-owner --strip-components 1 --file /tmp/glibc/source.tar.gz --directory /tmp/glibc/source && \
