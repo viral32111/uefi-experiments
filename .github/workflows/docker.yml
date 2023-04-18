@@ -58,7 +58,7 @@ jobs:
           tags: type=raw,value=${{ github.job }}
           labels: |
             org.opencontainers.image.title=GCC (x86_64 PC GNU/Linux)
-            org.opencontainers.image.description=Native (${{ github.job }}) GCC toolchain.
+            org.opencontainers.image.description=Native GCC toolchain for ${{ github.job }}.
             org.opencontainers.image.vendor=${{ github.repository_owner }}
             com.docker.extension.publisher-url=https://viral32111.com
 
