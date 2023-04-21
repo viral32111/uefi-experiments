@@ -44,7 +44,6 @@ jobs:
         uses: docker/setup-buildx-action@v2
         with:
           platforms: linux/amd64
-          driver-opts: image=moby/buildkit:v0.10.6
 
       - name: Create empty context directory
         run: mkdir --verbose ./context
@@ -70,6 +69,8 @@ jobs:
           context: ./context
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
+          platforms: linux/amd64
+          provenance: false
           no-cache: true
           pull: true
 
@@ -121,6 +122,8 @@ jobs:
           context: ./context
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
+          platforms: linux/amd64
+          provenance: false
           no-cache: true
           pull: true
 
